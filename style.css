@@ -12,3 +12,10 @@ p{
 .yippee{
     scale: 50%;
 }
+
+marquee { 
+    font-size: large;
+    color: red;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+}
