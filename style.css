@@ -35,6 +35,7 @@ a:hover {
 img {
     padding: auto;
     margin: auto;
+    width: fit-content;
 }
 
 .textbox {
