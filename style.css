@@ -67,6 +67,11 @@ div {
     padding: auto;
 }
 
+.foot {
+    margin: 10px;
+    padding: 20px;
+}
+
 .left {
     float: left;
     width: 33.3%;
