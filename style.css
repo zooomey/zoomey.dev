@@ -7,9 +7,26 @@ body {
 .content_box {
     background-color: black;
     background-position-x: center;
-    width: 70%;
+    width: 50%;
     margin: auto;
     padding-bottom: 3%;
+    border: 10px;
+    border-color: greenyellow;
+    border-width: 5px;
+    border-radius: 10%;
+    border-style: solid;
+}
+
+.content_box_2 {
+    background-color: black;
+    width: 30%;
+    margin: auto;
+    padding-bottom: 3%;
+    border: 10px;
+    border-color: greenyellow;
+    border-width: 5px;
+    border-radius: 10%;
+    border-style: solid;
 }
 
 h1 {
@@ -27,17 +44,20 @@ h2 {
 
 p{
     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-    font-size: small;
+    font-size: medium;
     display: block;
     color: white;
 }
 
+label{
+    color:white;
+}
 .baby {
     font-size: small;
 }
 
 a {
-    color: rgb(42, 25, 196);
+    color: rgb(245, 244, 252);
   }
 
 a:hover {
@@ -68,16 +88,7 @@ img {
     margin: auto;
     width: fit-content;
 }
-.credit {
-    text-align:center;
-    align-self: center;
-    padding: 5px;
-    margin: auto;
-    border-color: rgb(194, 84, 188);
-    border-width: 10px;
-    border-style: groove;
-    width: fit-content;
-}
+
 
 button {
     margin: 10px;
@@ -104,7 +115,13 @@ div {
 
 .column {
     float: left;
-    width: 50%;
+    width: 30%;
+    background-color: black;
+    margin: 10px;
+    border-style: solid;
+    border-width: 5px;
+    border-color: blueviolet;
+    border-radius: 5%;
   }
   
 .row:after {
@@ -114,7 +131,7 @@ div {
 }
 
 li {
-    align-self: center;
+    width: 50%;
   }
 
 marquee { 
@@ -136,19 +153,40 @@ img.logo{
 }
 
 img.blinkie{
-    width:40%;
+    width:70%;
     height: auto;
+    margin:auto;
+    padding: 10px;
+    align-self: center;
 }
 
 .centered{
     margin: auto;
     width: 50%;
-    padding: 10px;
 }
 
 .adhdtrap {
-    margin:auto;
-    padding: 10px;
-    align-items: left;
-    text-align: left;
+    float: left;
+    align-items: center;
+    width: 30%;
+    margin:10px;
+    background-color: black;
+    border-style: solid;
+    border-width: 5px;
+    border-color: blue;
+    border-radius: 5%;
+}
+
+.credit {
+    text-align: center;
+    align-self: center;
+    padding: 5px;
+    margin: auto;
+    border-color: rgb(194, 84, 188);
+    border-width: 10px;
+    border-style: groove;
+    width: fit-content;
+    background-color: black;
+    float: left;
+    
 }
