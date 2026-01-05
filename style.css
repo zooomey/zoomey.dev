@@ -14,9 +14,6 @@
             display: flex;
             min-height: 100vh;
         }
-
-
-
         .main-content {
             margin-left: 280px;
             width: calc(100% - 280px);
@@ -91,7 +88,7 @@
         .nav-buttons a {
             display: inline-block;
             padding: 15px 25px;
-            background: linear-gradient(180deg, #ff00ff 0%, #8b008b 100%);
+            background: linear-gradient(180deg, #ff00ff 0%, #da29da 100%);
             color: white;
             text-decoration: none;
             font-weight: bold;
@@ -104,8 +101,7 @@
         }
 
         .nav-buttons a:hover {
-            transform: translateY(-3px);
-            background: linear-gradient(180deg, #00ff00 0%, #008b00 100%);
+            background: linear-gradient(180deg, #00ff00 0%, #0dd90d 100%);
             border-color: #ff00ff;
             color: black;
         }
@@ -115,7 +111,6 @@
         }
 
         .nav-buttons a::before {
-            content: '★';
             position: absolute;
             left: 5px;
             top: 50%;
@@ -125,7 +120,6 @@
         }
 
         .nav-buttons a::after {
-            content: '★';
             position: absolute;
             right: 5px;
             top: 50%;
