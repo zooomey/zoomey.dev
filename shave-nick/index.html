@@ -1,0 +1,383 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shave Nick Sirianni's Head</title>
+<style>
+  body { margin: 0; background: #004C54; color: #fff; font-family: system-ui, sans-serif; text-align: center; user-select: none; }
+  h1 { margin: 16px 0 4px; }
+  #game { display: flex; justify-content: center; align-items: flex-start; gap: 20px; flex-wrap: wrap; margin: 12px 0 24px; }
+  #stage { position: relative; touch-action: none; }
+  #inventory { display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,.25); padding: 12px; border-radius: 12px; }
+  .slot { width: 90px; height: 90px; display: grid; place-items: center; background: rgba(255,255,255,.12); border: 3px solid rgba(255,255,255,.3); border-radius: 10px; cursor: pointer; padding: 0; }
+  .slot:hover { border-color: #fff; }
+  .slot img { max-width: 70px; max-height: 80px; transform: rotate(-25deg); pointer-events: none; }
+  #razorSlot.empty img, #hammerSlot.empty img { opacity: .2; }
+  #resetSlot { font-size: 40px; color: #fff; }
+  .sparkle { position: absolute; width: 40%; pointer-events: none; transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  .sparkle.go { animation: sparkle 1.4s ease-in-out forwards; }
+  @keyframes sparkle {
+    0%   { transform: translate(-50%,-50%) scale(0) rotate(0); opacity: 0; }
+    40%  { transform: translate(-50%,-50%) scale(1) rotate(45deg); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(0) rotate(90deg); opacity: 0; }
+  }
+  #splats { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .splat { position: absolute; width: 22%; transform: translate(-50%, -50%); animation: splat .15s ease-out; }
+  @keyframes splat { from { transform: translate(-50%,-50%) scale(.2); } }
+  #eagle { position: fixed; width: 240px; pointer-events: none; z-index: 20; display: none; }
+  .poop { position: fixed; width: 10px; height: 14px; background: #fff; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; pointer-events: none; z-index: 19; box-shadow: 0 0 2px rgba(0,0,0,.4); }
+  #eagleSlot img { transform: none; max-width: 78px; }
+  #eagleSlot.busy img { opacity: .2; }
+  #rateBox { position: absolute; left: -22%; bottom: -6%; white-space: nowrap; display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 5; visibility: hidden; opacity: 0; transition: opacity .4s; }
+  #rateBox.show { visibility: visible; opacity: 1; }
+  #arrow { width: 22px; flex-shrink: 0; }
+  #rateBox.show #arrow { animation: rise 1s ease-out; }
+  @keyframes rise { from { transform: translateY(20px); opacity: 0; } }
+  #rate { font-weight: 900; line-height: 1.05; text-align: center; }
+  #rateNum { font-size: clamp(18px, 4vw, 30px); font-variant-numeric: tabular-nums; }
+  #rateLabel { font-size: clamp(8px, 1.5vw, 11px); margin-top: 2px; }
+  #emoji { width: 44px; border-radius: 6px; }
+  #rate { text-shadow: 0 1px 4px rgba(0,0,0,.8); text-align: left; }
+  #hammer { position: fixed; pointer-events: none; width: 140px; display: none; z-index: 25;
+            transform-origin: 136px 134px; transform: translate(-6px, -29px) rotate(-25deg); transition: transform .08s; }
+  #hammer.hit { transform: translate(-6px, -29px) rotate(0deg); transition: transform .04s; }
+  #razor { z-index: 25 !important; }
+  #cracks { position: fixed; inset: 0; pointer-events: none; z-index: 15; overflow: hidden; }
+  .crack { position: absolute; width: 260px; transform: translate(-50%, -50%); }
+  #blinkies { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 120px 16px 24px; }
+  #blinkies img { width: 225px; max-width: 100%; height: auto; image-rendering: pixelated; display: block; }
+  body.armed, body.armed * { cursor: none !important; }
+  #bald { display: block; max-width: 90vw; max-height: 75vh; height: auto; }
+  #sad { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; transition: opacity .6s; }
+  #sad.show { opacity: 1; }
+  #hair { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #razor { position: fixed; pointer-events: none; width: 120px; display: none; transform: translate(-18px, -6px); z-index: 10; filter: drop-shadow(2px 4px 6px rgba(0,0,0,.4)); }
+  #razor.cutting { animation: vibrate .05s linear infinite; }
+  @keyframes vibrate { 0% { transform: translate(-18px,-6px); } 50% { transform: translate(-17px,-5px); } 100% { transform: translate(-19px,-6px); } }
+</style>
+</head>
+<body>
+  <h1>Shave Nick Sirianni's Head</h1>
+  <div id="game">
+    <div id="stage">
+      <img id="bald" src="nick-bald.png" alt="">
+      <img id="sad" src="nick-sad.png" alt="">
+      <canvas id="hair"></canvas>
+      <div id="splats"></div>
+      <div id="rateBox">
+        <svg id="arrow" viewBox="0 0 100 220"><polygon points="50,0 100,80 70,80 70,220 30,220 30,80 0,80" fill="#1ed01e"/></svg>
+        <div id="rate">
+          <div id="rateNum">+0%</div>
+          <div id="rateLabel">3RD DOWN CONVERSION RATE</div>
+        </div>
+        <img id="emoji" src="emoji.jpg" alt="">
+      </div>
+      <img class="sparkle" src="sparkle.png" alt="" style="left:50%; top:9%">
+      <img class="sparkle" src="sparkle.png" alt="" style="left:38%; top:14%; width:22%">
+      <img class="sparkle" src="sparkle.png" alt="" style="left:62%; top:12%; width:26%">
+    </div>
+    <div id="inventory">
+      <button class="slot" id="razorSlot" title="Clippers"><img src="razor.png" alt="Clippers"></button>
+      <button class="slot" id="eagleSlot" title="Eagle"><img src="eagle.png" alt="Eagle"></button>
+      <button class="slot" id="hammerSlot" title="Hammer"><img src="hammer.png" alt="Hammer"></button>
+      <button class="slot" id="resetSlot" title="Reset">↺</button>
+    </div>
+  </div>
+
+  <div id="blinkies">
+    <a href="https://zoomey.dev/"><img src="blinkie-zoomey.gif" alt="made by zoomey.dev"></a>
+    <img src="blinkie-gobirds.gif" alt="go birds">
+  </div>
+
+  <div id="cracks"></div>
+  <img id="razor" src="razor.png" alt="">
+  <img id="hammer" src="hammer.png" alt="">
+  <img id="eagle" src="eagle.png" alt="">
+
+
+<script>
+const HAIR_SRC = 'nick-hair.png';
+const BRUSH = 30;            // razor radius, in image pixels
+
+const bald = document.getElementById('bald');
+const canvas = document.getElementById('hair');
+const ctx = canvas.getContext('2d');
+const stage = document.getElementById('stage');
+const razor = document.getElementById('razor');
+const razorSlot = document.getElementById('razorSlot');
+
+const hairImg = new Image();
+hairImg.src = HAIR_SRC;
+
+let armed = false, down = false, last = null;
+
+// Centers of 8px grid cells that contain hair (in 400x400 image pixels).
+// Used to tell when the head is fully shaved without reading canvas pixels (so it works from file://).
+const HAIR_CELLS = [[196,4],[204,4],[212,4],[172,12],[180,12],[188,12],[196,12],[204,12],[212,12],[220,12],[228,12],[236,12],[164,20],[172,20],[180,20],[188,20],[196,20],[204,20],[212,20],[220,20],[228,20],[236,20],[244,20],[156,28],[164,28],[172,28],[180,28],[188,28],[196,28],[204,28],[212,28],[220,28],[228,28],[236,28],[244,28],[252,28],[148,36],[156,36],[164,36],[172,36],[180,36],[188,36],[196,36],[204,36],[212,36],[220,36],[228,36],[236,36],[244,36],[252,36],[140,44],[148,44],[156,44],[164,44],[172,44],[180,44],[204,44],[212,44],[220,44],[228,44],[236,44],[244,44],[252,44],[260,44],[140,52],[148,52],[156,52],[164,52],[172,52],[180,52],[228,52],[236,52],[244,52],[252,52],[260,52],[268,52],[132,60],[140,60],[148,60],[156,60],[164,60],[172,60],[236,60],[244,60],[252,60],[260,60],[268,60],[132,68],[140,68],[148,68],[156,68],[164,68],[244,68],[252,68],[260,68],[268,68],[132,76],[140,76],[148,76],[156,76],[164,76],[244,76],[252,76],[260,76],[268,76],[132,84],[140,84],[148,84],[156,84],[164,84],[252,84],[260,84],[268,84],[132,92],[140,92],[148,92],[260,92],[268,92],[132,100],[140,100],[148,100],[252,100],[260,100],[268,100],[140,108],[148,108],[252,108],[260,108],[268,108],[140,116],[148,116],[252,116],[260,116],[140,124],[148,124],[252,124],[260,124],[140,132],[148,132],[260,132],[140,140],[148,140],[260,140],[148,148]];
+const SAD_AT = 0.70;    // fraction shaved before he gets sadder
+const DONE_AT = 0.97;   // fraction of hair cells shaved to trigger the sparkle
+let shavedCells = new Set(), sparkled = false;
+
+const sparkleSfx = new Audio('sparkle.mp3');
+function sparkle() {
+  sparkled = true;
+  sparkleSfx.currentTime = 0;
+  sparkleSfx.play().catch(() => {});
+  document.querySelectorAll('.sparkle').forEach((el, i) => {
+    el.classList.remove('go');
+    void el.offsetWidth;                       // restart animation
+    setTimeout(() => el.classList.add('go'), i * 350);
+  });
+}
+
+function markShaved(a, b) {
+  const sx = 400 / canvas.width, sy = 400 / canvas.height;  // canvas px -> grid px
+  const ax = a.x * sx, ay = a.y * sy, bx = b.x * sx, by = b.y * sy, r = BRUSH * sx;
+  const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy || 1;
+  HAIR_CELLS.forEach(([cx, cy], i) => {
+    if (shavedCells.has(i)) return;
+    const t = Math.max(0, Math.min(1, ((cx - ax) * dx + (cy - ay) * dy) / len2));
+    const px = ax + t * dx - cx, py = ay + t * dy - cy;
+    if (px * px + py * py <= r * r) shavedCells.add(i);
+  });
+  if (shavedCells.size >= HAIR_CELLS.length * SAD_AT) document.getElementById('sad').classList.add('show');
+  if (!sparkled && shavedCells.size >= HAIR_CELLS.length * DONE_AT) sparkle();
+}
+
+// ---------- setup ----------
+function reset() {
+  canvas.width = hairImg.naturalWidth;
+  canvas.height = hairImg.naturalHeight;
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.drawImage(hairImg, 0, 0);
+  shavedCells = new Set();
+  sparkled = false;
+  document.getElementById('sad').classList.remove('show');
+  document.querySelectorAll('.sparkle').forEach(el => el.classList.remove('go'));
+  document.getElementById('splats').innerHTML = '';
+  document.getElementById('cracks').innerHTML = '';
+}
+
+Promise.all([hairImg.decode(), bald.decode()]).then(reset);
+
+// ---------- clipper sound ----------
+const sfx = new Audio('razor.mp3');
+sfx.loop = true;
+function buzz(on) {
+  if (on) sfx.play().catch(() => {});
+  else sfx.pause();
+}
+
+// ---------- controls ----------
+// Click the clippers in the inventory to pick them up; click the slot again (or Esc) to put them back
+function setArmed(on) {
+  armed = on;
+  if (on && hammerOn) setHammer(false);
+  document.body.classList.toggle('armed', armed || hammerOn);
+  razorSlot.classList.toggle('empty', armed);
+  razor.style.display = armed ? 'block' : 'none';
+  if (!armed) buzz(false);
+}
+razorSlot.onclick = e => {
+  razor.style.left = e.clientX + 'px';
+  razor.style.top = e.clientY + 'px';
+  setArmed(!armed);
+};
+addEventListener('keydown', e => { if (e.key === 'Escape' && armed) setArmed(false); });
+document.getElementById('resetSlot').onclick = reset;
+
+// ---------- hammer: click anywhere to crack the screen ----------
+const hammerSlot = document.getElementById('hammerSlot');
+const hammer = document.getElementById('hammer');
+const cracks = document.getElementById('cracks');
+let hammerOn = false;
+function setHammer(on) {
+  hammerOn = on;
+  if (on && armed) setArmed(false);
+  document.body.classList.toggle('armed', armed || hammerOn);
+  hammerSlot.classList.toggle('empty', hammerOn);
+  hammer.style.display = hammerOn ? 'block' : 'none';
+}
+hammerSlot.onclick = e => {
+  hammer.style.left = e.clientX + 'px';
+  hammer.style.top = e.clientY + 'px';
+  setHammer(!hammerOn);
+};
+addEventListener('keydown', e => { if (e.key === 'Escape' && hammerOn) setHammer(false); });
+addEventListener('pointerdown', e => {
+  if (!hammerOn || e.target.closest('#inventory')) return;
+  const c = document.createElement('img');
+  c.src = 'crack.png';
+  c.className = 'crack';
+  c.style.left = e.clientX + 'px';
+  c.style.top = e.clientY + 'px';
+  c.style.rotate = Math.random() * 360 + 'deg';
+  cracks.appendChild(c);
+  playOnce('hammer.mp3');
+  hammer.classList.add('hit');
+  setTimeout(() => hammer.classList.remove('hit'), 120);
+});
+
+addEventListener('pointermove', e => {
+  razor.style.left = hammer.style.left = e.clientX + 'px';
+  razor.style.top = hammer.style.top = e.clientY + 'px';
+});
+
+function toCanvas(e) {
+  const r = canvas.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * canvas.width / r.width,
+           y: (e.clientY - r.top) * canvas.height / r.height };
+}
+
+function shave(a, b) {
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.lineCap = 'round';
+  ctx.lineWidth = BRUSH * 2;
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x + 0.01, b.y);
+  ctx.stroke();
+  markShaved(a, b);
+}
+
+canvas.addEventListener('pointerdown', e => {
+  if (!armed) return;
+  down = true;
+  canvas.setPointerCapture(e.pointerId);
+  last = toCanvas(e);
+  shave(last, last);
+  buzz(true);
+  razor.classList.add('cutting');
+});
+canvas.addEventListener('pointermove', e => {
+  if (!down) return;
+  const p = toCanvas(e);
+  shave(last, p);
+  last = p;
+});
+function stop() {
+  if (!down) return;
+  down = false;
+  razor.classList.remove('cutting');
+  buzz(false);
+}
+canvas.addEventListener('pointerup', stop);
+canvas.addEventListener('pointercancel', stop);
+
+// ---------- eagle flyover ----------
+const FLIGHT_MS = 5000;   // how long the eagle takes to cross the screen
+const POOPS = 3;          // drops per flyover
+const eagleSlot = document.getElementById('eagleSlot');
+const eagle = document.getElementById('eagle');
+const splats = document.getElementById('splats');
+const song = new Audio('song.mp3');
+let flying = false;
+
+function playOnce(src, volume = 1) {   // new element each time so sounds can overlap
+  const a = new Audio(src);
+  a.volume = volume;
+  a.play().catch(() => {});
+}
+
+function fadeOut(a, ms) {
+  const start = a.volume, t0 = performance.now();
+  (function step(now) {
+    const k = Math.min(1, (now - t0) / ms);
+    a.volume = start * (1 - k);
+    if (k < 1) requestAnimationFrame(step); else { a.pause(); a.volume = start; }
+  })(t0);
+}
+
+function dropPoop(fromX, fromY) {
+  const r = stage.getBoundingClientRect();
+  // land somewhere on Nick's head / shoulders
+  const px = 0.3 + Math.random() * 0.4;
+  let py = 0.1 + Math.random() * 0.5;
+  py = Math.max(py, (fromY + 40 - r.top) / r.height);   // always fall downward
+  const toX = r.left + px * r.width, toY = r.top + py * r.height;
+  const poop = document.createElement('div');
+  poop.className = 'poop';
+  poop.style.left = fromX + 'px';
+  poop.style.top = fromY + 'px';
+  document.body.appendChild(poop);
+  poop.animate([
+    { transform: 'translate(0,0)' },
+    { transform: `translate(${toX - fromX}px, ${toY - fromY}px)` }
+  ], { duration: 600, easing: 'cubic-bezier(.5,0,1,1)' }).onfinish = () => {
+    poop.remove();
+    const s = document.createElement('img');
+    s.src = 'splat.png';
+    s.className = 'splat';
+    s.style.left = px * 100 + '%';
+    s.style.top = py * 100 + '%';
+    s.style.rotate = Math.random() * 360 + 'deg';
+    splats.appendChild(s);
+    playOnce('splat.mp3');
+  };
+}
+
+function flyEagle() {
+  if (flying) return;
+  flying = true;
+  eagleSlot.classList.add('busy');
+  if (sparkled) showRate();
+  song.currentTime = 3;   // skip the intro
+  song.volume = 1;
+  song.play().catch(() => {});
+
+  // screech right away, then every 2 to 3.5 seconds
+  playOnce('screech.mp3', 0.8);
+  let screechTimer;
+  (function nextScreech() {
+    screechTimer = setTimeout(() => { playOnce('screech.mp3', 0.8); nextScreech(); }, 2000 + Math.random() * 1500);
+  })();
+
+  const r = stage.getBoundingClientRect();
+  const W = eagle.offsetWidth || 240;
+  const startX = innerWidth + 20, endX = -W - 20;
+  const baseY = r.top - W * 0.55;   // flies just above his head
+  // pick screen x positions over the photo where poop drops
+  const drops = Array.from({ length: POOPS }, () => r.left + r.width * (0.3 + Math.random() * 0.4))
+                     .sort((a, b) => b - a);
+  eagle.style.display = 'block';
+  const t0 = performance.now();
+
+  (function frame(now) {
+    const k = Math.min(1, (now - t0) / FLIGHT_MS);
+    const x = startX + (endX - startX) * k;
+    const y = baseY + Math.sin(k * Math.PI * 4) * 25;
+    eagle.style.left = x + 'px';
+    eagle.style.top = y + 'px';
+    const tailX = x + W * 0.7, tailY = y + W * 0.55;   // roughly under the eagle's tail
+    while (drops.length && tailX <= drops[0]) dropPoop(drops.shift(), tailY);
+    if (k < 1) requestAnimationFrame(frame);
+    else {
+      eagle.style.display = 'none';
+      clearTimeout(screechTimer);
+      fadeOut(song, 1500);
+      flying = false;
+      eagleSlot.classList.remove('busy');
+    }
+  })(t0);
+}
+eagleSlot.onclick = flyEagle;
+
+// ---------- conversion rate: counts up while the eagle flies over a bald Nick ----------
+const RATE_TARGET = 50000;
+const rateBox = document.getElementById('rateBox');
+const rateNum = document.getElementById('rateNum');
+
+function showRate() {
+  rateBox.classList.add('show');
+  const t0 = performance.now();
+  (function count(now) {
+    const k = Math.min(1, (now - t0) / FLIGHT_MS);
+    rateNum.textContent = '+' + Math.round(RATE_TARGET * k * k).toLocaleString() + '%';  // speeds up as it climbs
+    if (k < 1) requestAnimationFrame(count);
+    else setTimeout(() => rateBox.classList.remove('show'), 400);
+  })(t0);
+}
+</script>
+</body>
+</html>
