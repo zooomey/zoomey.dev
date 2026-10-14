@@ -32,7 +32,7 @@
 
 
                 {% for post in site.posts %}
-                <article class="blog-post">
+                <article class="blog-post" id="{{ post.slug }}">
                     <h2>{{ post.title }}</h2>
                     <div class="post-meta">
                         Posted on {{ post.date | date: "%B %-d, %Y" }} | By zoomey

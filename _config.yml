@@ -1,5 +1,8 @@
 # Blog posts live in _posts/ and are listed on newblog.html.
-# Don't also publish each post as its own bare page.
-collections:
-  posts:
-    output: false
+# GitHub Pages still publishes each post at its own URL, so send those
+# visitors to the post on the blog page instead of an unstyled page.
+defaults:
+  - scope:
+      type: posts
+    values:
+      layout: post-redirect
