@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,20 +12,7 @@
     <marquee behavior="scroll" direction="left" scrollamount="20">I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS</marquee>
 
     <div class="container">
-        <aside class="sidebar">
-            <img src="img/zoomeydevlogo.png" alt="Zoomey Dev Logo" style="width: 80%; display: block; margin: auto; padding-bottom: 10px;">
-            <div class="social-links">
-                <img src="blinkies/blinkiesCafe-Sd.gif" style="width: 100%;">
-                <a href="https://twitter.com/zoomeyv2"><img src="blinkies/blinkiesCafe-sa.gif" alt="Twitter"></a>
-                <a href="https://www.twitch.tv/zooomey"><img src="blinkies/blinkiesCafe-Dh.gif" alt="Twitch"></a>
-                <a href="https://github.com/zooomey"><img src="blinkies/blinkiesCafe-c1.gif" alt="GitHub"></a>
-            </div>
-
-            <div class="chat-box">
-                <img src="blinkies/blinkiesCafe-FM.gif" alt="Chat" style="width: 100%;">
-                <iframe src="https://www3.cbox.ws/box/?boxid=3532537&boxtag=n7VeuI" allowtransparency="yes" allow="autoplay" frameborder="0" scrolling="auto"></iframe>
-            </div>
-        </aside>
+        {% include sidebar.html %}
 
         <main class="main-content">
             <div class="content-wrapper">
@@ -33,20 +22,39 @@
                     <h1>digital collection of images and things I find cool</h1>
                     <p style="font-size: 14px;">yuuuuuup</p>
                 </section>
-                <nav class="nav-buttons">
-                    <a href="index.html">Home</a>
-                    <a href="newblog.html">Blog</a>
-                    <a href="music.html">Music Box</a>
-                    <a href="collection.html">Collection</a>
-                    <a href="etc.html">Etc</a>
-                </nav>
+                {% include nav.html %}
                 <img class="divider" src="img/38.gif">
    
                 <article class="blog-post">
-                    <h2>Blinkies</h2>
-                    <div class="collection-grid">
-                        <div class="collection-item"><img src="blinkies/chiikawa.gif"></div>
-                        <div class="collection-item"><img src="blinkies/friendsonfire.gif"></div>
+                    <h2>Blinkies and Buttons</h2>
+                    <h3 class="collection-label">Blinkies</h3>
+                    <div class="collection-grid compact blinkies">
+                        <div class="collection-item"><img src="img/blinkies/chiikawa.gif"></div>
+                        <div class="collection-item"><img src="img/blinkies/friendsonfire.gif"></div>
+                    </div>
+                    <h3 class="collection-label">Buttons</h3>
+                    <div class="collection-grid compact buttons">
+                        <div class="collection-item"><img src="img/blinkies/ralsei.gif"></div>
+                        <div class="collection-item"><img src="img/buttons/a1.gif"></div>
+                        <div class="collection-item"><img src="img/buttons/a111.gif"></div>
+                        <div class="collection-item"><img src="img/buttons/a80.gif"></div>
+                        <div class="collection-item"><img src="img/buttons/blockabitch.png"></div>
+                        <div class="collection-item"><img src="img/buttons/e19.gif"></div>
+                        <div class="collection-item"><img src="img/buttons/e23.gif"></div>
+                        <div class="collection-item"><img src="img/buttons/e26.gif"></div>
+                        <div class="collection-item"><img src="img/buttons/h3.gif"></div>
+                    </div>
+                    <h3 class="collection-label">Stamps</h3>
+                    <div class="collection-grid compact stamps">
+                        <div class="collection-item"><img src="img/stamps/a1.gif"></div>
+                        <div class="collection-item"><img src="img/stamps/a59.png"></div>
+                        <div class="collection-item"><img src="img/stamps/b71.png"></div>
+                        <div class="collection-item"><img src="img/stamps/d105.gif"></div>
+                        <div class="collection-item"><img src="img/stamps/d2.gif"></div>
+                        <div class="collection-item"><img src="img/stamps/e42.gif"></div>
+                        <div class="collection-item"><img src="img/stamps/f53.png"></div>
+                        <div class="collection-item"><img src="img/stamps/j6.png"></div>
+                        <div class="collection-item"><img src="img/stamps/k18.gif"></div>
                     </div>
                 </article>
 
@@ -54,21 +62,38 @@
                     <h2>Images</h2>
                     <div class="collection-grid">
                         <div class="collection-item"><img src="img/zoomeybeat.png"></div>
-                        <div class="collection-item"><img src="img/yuri.gif"></div>
-                        <div class="collection-item"><img src="img/tacobell.gif"></div>
+                        <div class="collection-item"><img src="img/images/yuri.gif"></div>
+                        <div class="collection-item"><img src="img/images/tacobell.gif"></div>
+                        <div class="collection-item"><img src="img/images/balatrocollage.gif"></div>
+                        <div class="collection-item"><img src="img/images/bob.gif"></div>
+                        <div class="collection-item"><img src="img/images/crayon.gif"></div>
+                        <div class="collection-item"><img src="img/images/evilhorse.png"></div>
+                        <div class="collection-item"><img src="img/images/gwimbly.gif"></div>
+                        <div class="collection-item"><img src="img/images/lolipop.gif"></div>
+                        <div class="collection-item"><img src="img/images/openqueue.png"></div>
+                        <div class="collection-item"><img src="img/images/thirty.gif"></div>
                     </div>
                 </article>
 
-                <div class="foot">
-                    <img src="blinkies/blinkiesCafe-PE.gif">
-                    <img src="blinkies/blinkiesCafe-EB.gif">
-                    <img src="blinkies/blinkiesCafe-Xa.gif">
-                    <img src="blinkies/blinkiesCafe-aM.gif">
-                    <img src="blinkies/blinkiesCafe-vA.gif">
-                    <img src="blinkies/blinkiesCafe-lM.gif">
-                    <img src="blinkies/blinkiesCafe-RD.gif">
-                    <img src="blinkies/blinkiesCafe-eX.gif">
-                </div>
+                <article class="blog-post">
+                    <h2>My Art (the good and bad)</h2>
+                    <div class="collection-grid large">
+                        <figure class="collection-item art-item">
+                            <img src="img/art/the-london-incident.jpg" alt="The London Incident">
+                            <figcaption><cite>The London Incident</cite> (2026)</figcaption>
+                        </figure>
+                        <figure class="collection-item art-item">
+                            <img src="img/art/me-and-twin-on-midlane.jpg" alt="Me and Twin on Midlane">
+                            <figcaption><cite>Me and Twin on Midlane</cite> (2026)</figcaption>
+                        </figure>
+                        <figure class="collection-item art-item">
+                            <img src="img/art/i-love-my-country-philadelphia.jpg" alt="I Love My Country Philadelphia">
+                            <figcaption><cite>I Love My Country Philadelphia</cite> (2026)</figcaption>
+                        </figure>
+                    </div>
+                </article>
+
+                {% include footer.html %}
             </div>
         </main>
     </div>

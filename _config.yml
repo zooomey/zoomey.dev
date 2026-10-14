@@ -1,0 +1,5 @@
+# Blog posts live in _posts/ and are listed on newblog.html.
+# Don't also publish each post as its own bare page.
+collections:
+  posts:
+    output: false

@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,21 +12,7 @@
     <marquee behavior="scroll" direction="left" scrollamount="20">I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS I'M IN YOUR WALLS</marquee>
 
     <div class="container">
-        <aside class="sidebar">
-            <img src="img/zoomeydevlogo.png" alt="Zoomey Dev Logo" style="width: 80%; display: block; margin: auto; padding-bottom: 10px;">
-            <div class="social-links">
-                <img src="blinkies/blinkiesCafe-Sd.gif" style="width: 100%;">
-                <a href="https://twitter.com/zoomeyv2"><img src="blinkies/blinkiesCafe-sa.gif" alt="Twitter"></a>
-                <a href="https://www.twitch.tv/zooomey"><img src="blinkies/blinkiesCafe-Dh.gif" alt="Twitch"></a>
-                <a href="https://github.com/zooomey"><img src="blinkies/blinkiesCafe-c1.gif" alt="GitHub"></a>
-            </div>
-
-            
-            <div class="chat-box">
-                <img src="blinkies/blinkiesCafe-FM.gif" alt="Chat" style="width: 100%;">
-                <iframe src="https://www3.cbox.ws/box/?boxid=3532537&boxtag=n7VeuI" allowtransparency="yes" allow="autoplay" frameborder="0" scrolling="auto"></iframe>
-            </div>
-        </aside>
+        {% include sidebar.html %}
 
         
         <main class="main-content">
@@ -36,25 +24,10 @@
                     <p>mystery box full of mp3s</p>
                 </section>
 
-                <nav class="nav-buttons">
-                    <a href="index.html">Home</a>
-                    <a href="newblog.html">Blog</a>
-                    <a href="music.html">Music Box</a>
-                    <a href="collection.html">Collection</a>
-                    <a href="etc.html">Etc</a>
-                </nav>
+                {% include nav.html %}
 
                 <img class="divider" src="img/38.gif">
                 <article class="music-post">
-                    <audio controls>
-                        <source src="music/souleater.ogg" type="audio/ogg">
-                        <source src="music/souleater.mp3" type="audio/mpeg">
-                    </audio><br>
-                
-                    <audio controls>
-                        <source src="music/renaicirc.ogg" type="audio/ogg">
-                        <source src="music/renaicirc.mp3" type="audio/mpeg">
-                    </audio><br>
                 
                     <audio controls>
                         <source src="music/worldismine.ogg" type="audio/ogg">
@@ -68,15 +41,7 @@
                     <a href="#">Older →</a>
                 </div>
 
-                <div class="foot">
-                    <img src="blinkies/blinkiesCafe-PE.gif">
-                    <img src="blinkies/blinkiesCafe-EB.gif">
-                    <img src="blinkies/blinkiesCafe-Xa.gif">
-                    <img src="blinkies/blinkiesCafe-aM.gif">
-                    <img src="blinkies/blinkiesCafe-lM.gif">
-                    <img src="blinkies/blinkiesCafe-RD.gif">
-                    <img src="blinkies/blinkiesCafe-eX.gif">
-                </div>
+                {% include footer.html %}
             </div>
         </main>
     </div>
