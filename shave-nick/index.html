@@ -10,13 +10,16 @@
   h1 { margin: 16px 0 4px; }
   #game { display: flex; justify-content: center; align-items: flex-start; gap: 20px; flex-wrap: wrap; margin: 12px 0 24px; }
   #stage { position: relative; touch-action: none; }
-  #inventory { display: flex; flex-direction: column; gap: 12px; background: rgba(0,0,0,.25); padding: 12px; border-radius: 12px; }
-  .slot { width: 90px; height: 90px; display: grid; place-items: center; background: rgba(255,255,255,.12); border: 3px solid rgba(255,255,255,.3); border-radius: 10px; cursor: pointer; padding: 0; }
+  #inventory { --h: min(400px, 75vh, 90vw); --cell: calc((var(--h) - 48px) / 3);  /* same height as Nick's photo; 48px = padding + gaps */
+    display: grid; grid-template-columns: repeat(2, var(--cell)); grid-template-rows: repeat(3, var(--cell)); box-sizing: border-box; height: var(--h); gap: 12px; background: rgba(0,0,0,.25); padding: 12px; border-radius: 12px; }
+  .slot { width: 100%; height: 100%; box-sizing: border-box; display: grid; place-items: center; background: rgba(255,255,255,.12); border: 3px solid rgba(255,255,255,.3); border-radius: 10px; cursor: pointer; padding: 0; }
   .slot:hover { border-color: #fff; }
-  .slot img { max-width: 70px; max-height: 80px; transform: rotate(-25deg); pointer-events: none; }
+  .slot img { max-width: 75%; max-height: 80%; transform: rotate(-25deg); pointer-events: none; }
   #razorSlot.empty img, #hammerSlot.empty img, #tomatoSlot.empty img { opacity: .2; }
-  #tomatoSlot img { transform: none; max-width: 64px; }
-  #resetSlot { font-size: 40px; color: #fff; }
+  #tomatoSlot img { transform: none; max-width: 68%; }
+  #phaserSlot img { transform: none; max-width: 82%; }
+  #phaserSlot.empty img { opacity: .2; }
+  #resetSlot { font-size: 48px; color: #fff; }
   .sparkle { position: absolute; width: 40%; pointer-events: none; transform: translate(-50%, -50%) scale(0); opacity: 0; }
   .sparkle.go { animation: sparkle 1.4s ease-in-out forwards; }
   @keyframes sparkle {
@@ -30,7 +33,7 @@
   @keyframes splat { from { transform: scale(.2); } }
   #eagle { position: fixed; width: 240px; pointer-events: none; z-index: 20; display: none; }
   .poop { position: fixed; width: 10px; height: 14px; background: #fff; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; pointer-events: none; z-index: 19; box-shadow: 0 0 2px rgba(0,0,0,.4); }
-  #eagleSlot img { transform: none; max-width: 78px; }
+  #eagleSlot img { transform: none; max-width: 85%; }
   #eagleSlot.busy img { opacity: .2; }
   #rateBox { position: absolute; left: -22%; bottom: -6%; white-space: nowrap; display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 5; visibility: hidden; opacity: 0; transition: opacity .4s; }
   #rateBox.show { visibility: visible; opacity: 1; }
@@ -59,6 +62,8 @@
   #tomatoCursor { position: fixed; pointer-events: none; width: 60px; display: none; z-index: 25; transform: translate(-50%, -50%); }
   .thrown { position: fixed; pointer-events: none; width: 90px; z-index: 22; left: 0; top: 0; }
   .tsplat { position: absolute; width: 38%; translate: -50% -50%; animation: splat .15s ease-out; }
+  #phaser { position: fixed; pointer-events: none; display: none; z-index: 25; transform: translate(-80px, -71px); }  /* aim point is at (80,71) in each frame */
+  #burns { position: fixed; inset: 0; pointer-events: none; z-index: 14; }
   #cracks { position: fixed; inset: 0; pointer-events: none; z-index: 15; overflow: hidden; }
   .crack { position: absolute; width: 260px; translate: -50% -50%; }
   #blinkies { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 120px 16px 24px; }
@@ -106,6 +111,7 @@
       <button class="slot" id="razorSlot" title="Clippers"><img src="razor.png" alt="Clippers"></button>
       <button class="slot" id="eagleSlot" title="Eagle"><img src="eagle.png" alt="Eagle"></button>
       <button class="slot" id="hammerSlot" title="Hammer"><img src="hammer.png" alt="Hammer"></button>
+      <button class="slot" id="phaserSlot" title="Phaser"><img src="phaser-icon.png" alt="Phaser"></button>
       <button class="slot" id="tomatoSlot" title="Tomato"><img src="tomato.png" alt="Tomato"></button>
       <button class="slot" id="resetSlot" title="Reset">↺</button>
     </div>
@@ -120,6 +126,8 @@
   <img id="razor" src="razor.png" alt="">
   <img id="hammer" src="hammer.png" alt="">
   <img id="tomatoCursor" src="tomato.png" alt="">
+  <img id="phaser" src="phaser-0.png" alt="">
+  <canvas id="burns"></canvas>
   <img id="eagle" src="eagle.png" alt="">
 
 
@@ -186,6 +194,7 @@ function reset() {
   document.getElementById('tsplats').innerHTML = '';
   tomatoHits = 0;
   document.getElementById('cracks').innerHTML = '';
+  if (typeof clearBurns === 'function') clearBurns();
 }
 
 Promise.all([hairImg.decode(), bald.decode()]).then(reset);
@@ -204,7 +213,8 @@ function setArmed(on) {
   armed = on;
   if (on && hammerOn) setHammer(false);
   if (on && tomatoOn) setTomato(false);
-  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn);
+  if (on && phaserOn) setPhaser(false);
+  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn || phaserOn);
   razorSlot.classList.toggle('empty', armed);
   razor.style.display = armed ? 'block' : 'none';
   if (!armed) buzz(false);
@@ -226,7 +236,8 @@ function setHammer(on) {
   hammerOn = on;
   if (on && armed) setArmed(false);
   if (on && tomatoOn) setTomato(false);
-  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn);
+  if (on && phaserOn) setPhaser(false);
+  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn || phaserOn);
   hammerSlot.classList.toggle('empty', hammerOn);
   hammer.style.display = hammerOn ? 'block' : 'none';
 }
@@ -251,8 +262,8 @@ addEventListener('pointerdown', e => {
 });
 
 addEventListener('pointermove', e => {
-  razor.style.left = hammer.style.left = tomatoCursor.style.left = e.clientX + 'px';
-  razor.style.top = hammer.style.top = tomatoCursor.style.top = e.clientY + 'px';
+  razor.style.left = hammer.style.left = tomatoCursor.style.left = phaser.style.left = e.clientX + 'px';
+  razor.style.top = hammer.style.top = tomatoCursor.style.top = phaser.style.top = e.clientY + 'px';
 });
 
 function toCanvas(e) {
@@ -439,7 +450,8 @@ function setTomato(on) {
   tomatoOn = on;
   if (on && armed) setArmed(false);
   if (on && hammerOn) setHammer(false);
-  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn);
+  if (on && phaserOn) setPhaser(false);
+  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn || phaserOn);
   tomatoSlot.classList.toggle('empty', tomatoOn);
   tomatoCursor.style.display = tomatoOn ? 'block' : 'none';
 }
@@ -488,6 +500,97 @@ stage.addEventListener('pointerdown', e => {
     playOnce('splat.mp3');
   })(t0);
 });
+
+// ---------- phaser (Desktop Destroyer style): hold the mouse to fire, burns build up under the beam ----------
+const BURN_EVERY = 60;     // ms between burn marks while holding still
+const BURN_STEP = 8;       // px between burn marks while moving, so the trail has no gaps
+const FRAME_MS = 60;       // ms per firing animation frame
+const BURN_SCALE = 0.25;   // burn mark size (1 = original 128px sprite)
+const phaserSlot = document.getElementById('phaserSlot');
+const phaser = document.getElementById('phaser');
+const burns = document.getElementById('burns');
+const bctx = burns.getContext('2d');
+const laser = new Audio('laser.mp3');
+laser.loop = true;
+const burnImgs = Array.from({ length: 10 }, (_, i) => { const im = new Image(); im.src = `burn-${i}.png`; return im; });
+['phaser-1.png', 'phaser-2.png', 'phaser-3.png'].forEach(src => { new Image().src = src; });  // preload frames
+let phaserOn = false, firing = false, aimX = 0, aimY = 0;
+
+function sizeBurns() {
+  const dpr = devicePixelRatio || 1;
+  const old = burns.width ? (() => { const c = document.createElement('canvas'); c.width = burns.width; c.height = burns.height; c.getContext('2d').drawImage(burns, 0, 0); return c; })() : null;
+  burns.width = innerWidth * dpr;
+  burns.height = innerHeight * dpr;
+  burns.style.width = innerWidth + 'px';
+  burns.style.height = innerHeight + 'px';
+  bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (old) bctx.drawImage(old, 0, 0, old.width / dpr, old.height / dpr);
+}
+sizeBurns();
+addEventListener('resize', sizeBurns);
+function clearBurns() { bctx.clearRect(0, 0, burns.width, burns.height); }
+
+function setPhaser(on) {
+  if (!on) stopFiring();
+  phaserOn = on;
+  if (on && armed) setArmed(false);
+  if (on && hammerOn) setHammer(false);
+  if (on && tomatoOn) setTomato(false);
+  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn || phaserOn);
+  phaserSlot.classList.toggle('empty', phaserOn);
+  phaser.style.display = phaserOn ? 'block' : 'none';
+}
+phaserSlot.onclick = e => {
+  phaser.style.left = e.clientX + 'px';
+  phaser.style.top = e.clientY + 'px';
+  setPhaser(!phaserOn);
+};
+addEventListener('keydown', e => { if (e.key === 'Escape' && phaserOn) setPhaser(false); });
+
+addEventListener('pointermove', e => { aimX = e.clientX; aimY = e.clientY; });
+addEventListener('pointerdown', e => {
+  if (!phaserOn || e.target.closest('#inventory')) return;
+  aimX = e.clientX; aimY = e.clientY;
+  firing = true;
+  laser.currentTime = 0;
+  laser.play().catch(() => {});
+  let lastBurn = 0, lastFrame = 0, frame = 1, bx = aimX, by = aimY;
+  burnAt(bx, by);
+  (function loop(now) {
+    if (!firing) return;
+    if (now - lastFrame >= FRAME_MS) {
+      lastFrame = now;
+      frame = frame % 3 + 1;                        // cycle firing frames 1 to 3
+      phaser.src = `phaser-${frame}.png`;
+    }
+    // fill in marks along the path since the last mark
+    const dx = aimX - bx, dy = aimY - by, dist = Math.hypot(dx, dy);
+    if (dist >= BURN_STEP) {
+      const n = Math.floor(dist / BURN_STEP);
+      for (let i = 1; i <= n; i++) burnAt(bx + dx * i / n, by + dy * i / n);
+      bx = aimX; by = aimY; lastBurn = now;
+    } else if (now - lastBurn >= BURN_EVERY) {     // holding still: keep darkening the spot
+      burnAt(aimX, aimY); lastBurn = now;
+    }
+    requestAnimationFrame(loop);
+  })(performance.now());
+});
+function burnAt(x, y) {
+  const im = burnImgs[Math.floor(Math.random() * burnImgs.length)];
+  if (!im.complete) return;
+  const w = im.width * BURN_SCALE, h = im.height * BURN_SCALE;
+  const jx = (Math.random() - .5) * 4, jy = (Math.random() - .5) * 4;
+  bctx.drawImage(im, x - w / 2 + jx, y - h / 2 + jy, w, h);
+}
+function stopFiring() {
+  if (!firing) return;
+  firing = false;
+  laser.pause();
+  phaser.src = 'phaser-0.png';
+}
+addEventListener('pointerup', stopFiring);
+addEventListener('pointercancel', stopFiring);
+addEventListener('blur', stopFiring);
 </script>
 </body>
 </html>
