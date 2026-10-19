@@ -13,7 +13,8 @@
   .slot { width: 90px; height: 90px; display: grid; place-items: center; background: rgba(255,255,255,.12); border: 3px solid rgba(255,255,255,.3); border-radius: 10px; cursor: pointer; padding: 0; }
   .slot:hover { border-color: #fff; }
   .slot img { max-width: 70px; max-height: 80px; transform: rotate(-25deg); pointer-events: none; }
-  #razorSlot.empty img, #hammerSlot.empty img { opacity: .2; }
+  #razorSlot.empty img, #hammerSlot.empty img, #tomatoSlot.empty img { opacity: .2; }
+  #tomatoSlot img { transform: none; max-width: 64px; }
   #resetSlot { font-size: 40px; color: #fff; }
   .sparkle { position: absolute; width: 40%; pointer-events: none; transform: translate(-50%, -50%) scale(0); opacity: 0; }
   .sparkle.go { animation: sparkle 1.4s ease-in-out forwards; }
@@ -23,8 +24,8 @@
     100% { transform: translate(-50%,-50%) scale(0) rotate(90deg); opacity: 0; }
   }
   #splats { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
-  .splat { position: absolute; width: 22%; transform: translate(-50%, -50%); animation: splat .15s ease-out; }
-  @keyframes splat { from { transform: translate(-50%,-50%) scale(.2); } }
+  .splat { position: absolute; width: 22%; translate: -50% -50%; animation: splat .15s ease-out; }
+  @keyframes splat { from { transform: scale(.2); } }
   #eagle { position: fixed; width: 240px; pointer-events: none; z-index: 20; display: none; }
   .poop { position: fixed; width: 10px; height: 14px; background: #fff; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; pointer-events: none; z-index: 19; box-shadow: 0 0 2px rgba(0,0,0,.4); }
   #eagleSlot img { transform: none; max-width: 78px; }
@@ -43,8 +44,11 @@
             transform-origin: 136px 134px; transform: translate(-6px, -29px) rotate(-25deg); transition: transform .08s; }
   #hammer.hit { transform: translate(-6px, -29px) rotate(0deg); transition: transform .04s; }
   #razor { z-index: 25 !important; }
+  #tomatoCursor { position: fixed; pointer-events: none; width: 60px; display: none; z-index: 25; transform: translate(-50%, -50%); }
+  .thrown { position: fixed; pointer-events: none; width: 90px; z-index: 22; left: 0; top: 0; }
+  .tsplat { position: absolute; width: 38%; translate: -50% -50%; animation: splat .15s ease-out; }
   #cracks { position: fixed; inset: 0; pointer-events: none; z-index: 15; overflow: hidden; }
-  .crack { position: absolute; width: 260px; transform: translate(-50%, -50%); }
+  .crack { position: absolute; width: 260px; translate: -50% -50%; }
   #blinkies { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; padding: 120px 16px 24px; }
   #blinkies img { width: 225px; max-width: 100%; height: auto; image-rendering: pixelated; display: block; }
   body.armed, body.armed * { cursor: none !important; }
@@ -81,6 +85,7 @@
       <button class="slot" id="razorSlot" title="Clippers"><img src="razor.png" alt="Clippers"></button>
       <button class="slot" id="eagleSlot" title="Eagle"><img src="eagle.png" alt="Eagle"></button>
       <button class="slot" id="hammerSlot" title="Hammer"><img src="hammer.png" alt="Hammer"></button>
+      <button class="slot" id="tomatoSlot" title="Tomato"><img src="tomato.png" alt="Tomato"></button>
       <button class="slot" id="resetSlot" title="Reset">↺</button>
     </div>
   </div>
@@ -93,6 +98,7 @@
   <div id="cracks"></div>
   <img id="razor" src="razor.png" alt="">
   <img id="hammer" src="hammer.png" alt="">
+  <img id="tomatoCursor" src="tomato.png" alt="">
   <img id="eagle" src="eagle.png" alt="">
 
 
@@ -174,7 +180,8 @@ function buzz(on) {
 function setArmed(on) {
   armed = on;
   if (on && hammerOn) setHammer(false);
-  document.body.classList.toggle('armed', armed || hammerOn);
+  if (on && tomatoOn) setTomato(false);
+  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn);
   razorSlot.classList.toggle('empty', armed);
   razor.style.display = armed ? 'block' : 'none';
   if (!armed) buzz(false);
@@ -195,7 +202,8 @@ let hammerOn = false;
 function setHammer(on) {
   hammerOn = on;
   if (on && armed) setArmed(false);
-  document.body.classList.toggle('armed', armed || hammerOn);
+  if (on && tomatoOn) setTomato(false);
+  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn);
   hammerSlot.classList.toggle('empty', hammerOn);
   hammer.style.display = hammerOn ? 'block' : 'none';
 }
@@ -220,8 +228,8 @@ addEventListener('pointerdown', e => {
 });
 
 addEventListener('pointermove', e => {
-  razor.style.left = hammer.style.left = e.clientX + 'px';
-  razor.style.top = hammer.style.top = e.clientY + 'px';
+  razor.style.left = hammer.style.left = tomatoCursor.style.left = e.clientX + 'px';
+  razor.style.top = hammer.style.top = tomatoCursor.style.top = e.clientY + 'px';
 });
 
 function toCanvas(e) {
@@ -378,6 +386,64 @@ function showRate() {
     else setTimeout(() => rateBox.classList.remove('show'), 400);
   })(t0);
 }
+
+// ---------- tomato: click on Nick to throw one ----------
+const THROW_MS = 1100;   // flight time; the whistle runs for the whole flight
+const tomatoSlot = document.getElementById('tomatoSlot');
+const tomatoCursor = document.getElementById('tomatoCursor');
+let tomatoOn = false;
+function setTomato(on) {
+  tomatoOn = on;
+  if (on && armed) setArmed(false);
+  if (on && hammerOn) setHammer(false);
+  document.body.classList.toggle('armed', armed || hammerOn || tomatoOn);
+  tomatoSlot.classList.toggle('empty', tomatoOn);
+  tomatoCursor.style.display = tomatoOn ? 'block' : 'none';
+}
+tomatoSlot.onclick = e => {
+  tomatoCursor.style.left = e.clientX + 'px';
+  tomatoCursor.style.top = e.clientY + 'px';
+  setTomato(!tomatoOn);
+};
+addEventListener('keydown', e => { if (e.key === 'Escape' && tomatoOn) setTomato(false); });
+
+stage.addEventListener('pointerdown', e => {
+  if (!tomatoOn) return;
+  const r = stage.getBoundingClientRect();
+  const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+  const toX = e.clientX, toY = e.clientY;
+  const fromX = innerWidth / 2, fromY = innerHeight + 60;        // thrown from the bottom of the screen
+  const peakY = Math.min(toY, fromY) - 160;                       // arc up, then drop onto the target
+
+  const t = document.createElement('img');
+  t.src = 'tomato.png';
+  t.className = 'thrown';
+  document.body.appendChild(t);
+  const whistle = new Audio('whistle.mp3');
+  whistle.play().catch(() => {});
+
+  const spin = (Math.random() < .5 ? -1 : 1) * (540 + Math.random() * 360);
+  const t0 = performance.now();
+  (function frame(now) {
+    const k = Math.min(1, (now - t0) / THROW_MS);
+    const x = fromX + (toX - fromX) * k;
+    // quadratic arc through the peak
+    const y = (1 - k) * (1 - k) * fromY + 2 * (1 - k) * k * (2 * peakY - (fromY + toY) / 2) + k * k * toY;
+    const scale = 1.4 - 0.9 * k;                                   // shrinks as it flies "into" the screen
+    t.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${scale}) rotate(${spin * k}deg)`;
+    if (k < 1) return requestAnimationFrame(frame);
+    t.remove();
+    whistle.pause();
+    const sp = document.createElement('img');
+    sp.src = 'tomato-splat.png';
+    sp.className = 'tsplat';
+    sp.style.left = px * 100 + '%';
+    sp.style.top = py * 100 + '%';
+    sp.style.rotate = Math.random() * 360 + 'deg';
+    splats.appendChild(sp);
+    playOnce('splat.mp3');
+  })(t0);
+});
 </script>
 </body>
 </html>
