@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Shave Nick Sirianni's Head</title>
 <style>
+  html, body { overflow-x: clip; }
   body { margin: 0; background: #004C54; color: #fff; font-family: system-ui, sans-serif; text-align: center; user-select: none; }
   h1 { margin: 16px 0 4px; }
   #game { display: flex; justify-content: center; align-items: flex-start; gap: 20px; flex-wrap: wrap; margin: 12px 0 24px; }
@@ -24,6 +25,7 @@
     100% { transform: translate(-50%,-50%) scale(0) rotate(90deg); opacity: 0; }
   }
   #splats { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  #tsplats { position: absolute; inset: 0; pointer-events: none; z-index: 6; }   /* tomato splats can spill past the photo */
   .splat { position: absolute; width: 22%; translate: -50% -50%; animation: splat .15s ease-out; }
   @keyframes splat { from { transform: scale(.2); } }
   #eagle { position: fixed; width: 240px; pointer-events: none; z-index: 20; display: none; }
@@ -40,6 +42,16 @@
   #rateLabel { font-size: clamp(8px, 1.5vw, 11px); margin-top: 2px; }
   #emoji { width: 44px; border-radius: 6px; }
   #rate { text-shadow: 0 1px 4px rgba(0,0,0,.8); text-align: left; }
+  /* injury report: same look as the conversion rate, hangs off the photo's top-left corner */
+  #injuryBox { position: absolute; left: -22%; top: 6%; white-space: nowrap; display: flex; align-items: center; gap: 8px; pointer-events: none; z-index: 7; visibility: hidden; opacity: 0; transition: opacity .4s; }
+  #injuryBox.show { visibility: visible; opacity: 1; }
+  #downArrow { width: 22px; flex-shrink: 0; }
+  #injuryBox.show #downArrow { animation: drop 1s ease-out; }
+  @keyframes drop { from { transform: translateY(-20px); opacity: 0; } }
+  #injury { font-weight: 900; line-height: 1.05; text-align: left; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+  #injuryNum { font-size: clamp(18px, 4vw, 30px); font-variant-numeric: tabular-nums; }
+  #injuryLabel { font-size: clamp(8px, 1.5vw, 11px); margin-top: 2px; }
+  #injuredEmoji { width: 44px; border-radius: 6px; }
   #hammer { position: fixed; pointer-events: none; width: 140px; display: none; z-index: 25;
             transform-origin: 136px 134px; transform: translate(-6px, -29px) rotate(-25deg); transition: transform .08s; }
   #hammer.hit { transform: translate(-6px, -29px) rotate(0deg); transition: transform .04s; }
@@ -69,6 +81,7 @@
       <img id="sad" src="nick-sad.png" alt="">
       <canvas id="hair"></canvas>
       <div id="splats"></div>
+      <div id="tsplats"></div>
       <div id="rateBox">
         <svg id="arrow" viewBox="0 0 100 220"><polygon points="50,0 100,80 70,80 70,220 30,220 30,80 0,80" fill="#1ed01e"/></svg>
         <div id="rate">
@@ -76,6 +89,14 @@
           <div id="rateLabel">3RD DOWN CONVERSION RATE</div>
         </div>
         <img id="emoji" src="emoji.jpg" alt="">
+      </div>
+      <div id="injuryBox">
+        <svg id="downArrow" viewBox="0 0 100 220"><polygon points="50,220 100,140 70,140 70,0 30,0 30,140 0,140" fill="#1ed01e"/></svg>
+        <div id="injury">
+          <div id="injuryNum">50,000</div>
+          <div id="injuryLabel">PLAYERS ON INJURY REPORT</div>
+        </div>
+        <img id="injuredEmoji" src="injured.jpg" alt="">
       </div>
       <img class="sparkle" src="sparkle.png" alt="" style="left:50%; top:9%">
       <img class="sparkle" src="sparkle.png" alt="" style="left:38%; top:14%; width:22%">
@@ -162,6 +183,8 @@ function reset() {
   document.getElementById('sad').classList.remove('show');
   document.querySelectorAll('.sparkle').forEach(el => el.classList.remove('go'));
   document.getElementById('splats').innerHTML = '';
+  document.getElementById('tsplats').innerHTML = '';
+  tomatoHits = 0;
   document.getElementById('cracks').innerHTML = '';
 }
 
@@ -387,6 +410,26 @@ function showRate() {
   })(t0);
 }
 
+// ---------- injury report: counts down after every few tomato hits ----------
+const INJURY_EVERY = 3;      // show it on every 3rd tomato that lands
+const INJURY_START = 50000, INJURY_MS = 2000;
+const injuryBox = document.getElementById('injuryBox');
+const injuryNum = document.getElementById('injuryNum');
+let tomatoHits = 0, injuryRunning = false;
+
+function showInjury() {
+  if (injuryRunning) return;
+  injuryRunning = true;
+  injuryBox.classList.add('show');
+  const t0 = performance.now();
+  (function count(now) {
+    const k = Math.min(1, (now - t0) / INJURY_MS);
+    injuryNum.textContent = Math.round(INJURY_START * (1 - k * k)).toLocaleString();  // drops faster as it goes
+    if (k < 1) return requestAnimationFrame(count);
+    setTimeout(() => { injuryBox.classList.remove('show'); injuryRunning = false; }, 400);
+  })(t0);
+}
+
 // ---------- tomato: click on Nick to throw one ----------
 const THROW_MS = 1100;   // flight time; the whistle runs for the whole flight
 const tomatoSlot = document.getElementById('tomatoSlot');
@@ -440,7 +483,8 @@ stage.addEventListener('pointerdown', e => {
     sp.style.left = px * 100 + '%';
     sp.style.top = py * 100 + '%';
     sp.style.rotate = Math.random() * 360 + 'deg';
-    splats.appendChild(sp);
+    document.getElementById('tsplats').appendChild(sp);
+    if (++tomatoHits % INJURY_EVERY === 0) showInjury();
     playOnce('splat.mp3');
   })(t0);
 });
